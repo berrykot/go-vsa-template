@@ -1,0 +1,36 @@
+# Системные папки Git
+.git
+.gitignore
+
+# Локальные бинарники и кэш
+bin/
+obj/
+dist/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Переменные окружения (НЕ копируем локальный .env в образ!)
+.env
+.env.*
+!.env.example
+
+# Кэш инструментов и IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Docker файлы
+Dockerfile
+docker-compose.yml
+
+# Логи и временные файлы
+*.log
+tmp/
+vendor/
+
+# Сгенерированный код (если хочешь, чтобы Docker сам запускал wire)
+# cmd/myapp/wire_gen.go
