@@ -1,0 +1,48 @@
+version: '3'
+
+tasks:
+  default:
+    desc: fmt + generate + build (запуск по умолчанию)
+    deps: [fmt, build]
+
+  run:
+    desc: Запуск приложения (generate + go run)
+    deps: [generate]
+    ignore_error: true
+    cmds:
+      - go run ./cmd/app
+
+  build:
+    desc: Сборка бинарника (generate + build → bin/app)
+    deps: [generate]
+    cmds:
+      - go build -o bin/app ./cmd/app
+
+  test:
+    desc: Запуск юнит-тестов (без -tags=integration)
+    cmds:
+      - go test ./...
+
+  'test:integration':
+    desc: Запуск всех тестов, включая интеграционные (-tags=integration)
+    cmds:
+      - go test -tags=integration ./...
+
+  pre-commit:
+    desc: "Проверка перед коммитом: tidy + fmt + generate + build + test"
+    deps: [fmt, generate, build, test]
+
+  tidy:
+    desc: go mod tidy
+    cmds:
+      - go mod tidy
+
+  fmt:
+    desc: go fmt
+    cmds:
+      - go fmt ./...
+
+  generate:
+    desc: go generate ./cmd/app (в т.ч. Wire/DI; -tags=wireinject чтобы обработать wire.go)
+    cmds:
+      - go generate -tags=wireinject ./cmd/app

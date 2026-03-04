@@ -27,7 +27,10 @@ go.work.sum
 # auto generated (wire etc)
 *_gen.go
 
+node_modules
+migrations
 bin/
+app
 
 # env file
 .env
@@ -35,3 +38,4 @@ bin/
 # Editor/IDE
 .idea/
 .vscode/
+.DS_Store

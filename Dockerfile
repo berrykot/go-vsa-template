@@ -1,37 +1,36 @@
-# --- Stage 1: Build ---
-FROM golang:1.25-alpine AS builder
+# --- Stage 1: Зависимости + код + генерация (wire) ---
+FROM golang:1.25-alpine AS generator
 
-# Устанавливаем wire для генерации зависимостей
-RUN go install github.com/google/wire/cmd/wire@v0.7.0
+RUN go install github.com/go-task/task/v3/cmd/task@v3.48.0
 
-WORKDIR /app
+WORKDIR /build
 
-# Сначала копируем только файлы зависимостей (для кэширования слоев)
 COPY go.mod go.sum ./
 RUN go mod download
 
-# Копируем остальной код
 COPY . .
 
-# Генерируем wire_gen.go прямо внутри контейнера
-RUN wire ./cmd/app
+ENV CGO_ENABLED=0 GOOS=linux
+RUN task generate
 
-# Собираем статический бинарник (CGO_ENABLED=0 критично для alpine)
-RUN CGO_ENABLED=0 GOOS=linux go build -o /main ./cmd/app
+FROM generator AS tester
+RUN task test
 
-# --- Stage 2: Final ---
+FROM tester AS builder
+RUN task build
+
 FROM alpine:3.23.3
 
-# Добавляем сертификаты (нужны для запросов к Supabase по HTTPS)
-RUN apk --no-cache add ca-certificates
+# Сертификаты (HTTPS) + tzdata (time.LoadLocation, напр. Europe/Madrid для cron)
+RUN apk --no-cache add ca-certificates tzdata
 
 WORKDIR /
 
-# Копируем только скомпилированный файл из первого этапа
-COPY --from=builder /main /main
+# Копируем скомпилированный файл из первого этапа
+COPY --from=builder /build/bin/app /usr/local/bin/app
 
-# Render сам подставит нужный порт в переменную PORT
+#The default value of PORT is 10000 for all Render web services.
 EXPOSE 8080
 
 # Запускаем приложение
-CMD ["/main"]
+CMD ["/usr/local/bin/app"]

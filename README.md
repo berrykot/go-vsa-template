@@ -5,7 +5,11 @@
 Перед первым запуском установи Wire (один раз):
 
 ```bash
+git config core.hooksPath .githooks
+
 go install github.com/google/wire/cmd/wire@latest
+
+go install github.com/go-task/task/v3/cmd/task@latest
 ```
 
 Далее при любом изменении зависимостей или новых фичах — сначала генерируй Wire, потом запускай приложение:
